@@ -14,17 +14,10 @@ checkKoszulTail = (n, d, bettiTable) -> (
 )
 --tested, works, STG 5/16/2023
 
-hasKoszulTail = (n, d, bettiTable) -> (
-      --checks if there is a Koszul tail, i.e. a sequence of binomial coefficients,
-      --in the betti table. Checks {binomial(n,d)} for 1 <= n <= numVars.
-      --NOTE: Expects the Koszul trace in the d-th row
-      
-      -- run through all (i,j) such that 0 <= i <= numVars and 0 <= j <= d+1
-      -- use bettiTable$?{value} (remove braces) to check if entry is nonzero (true if so, false otherwise)
-       whereKoszulTraces := for k from 0 to n-1 list checkKoszulTail(n-k, d, bettiTable);
-       reverse whereKoszulTraces
+koszulTails = (bettiTable) -> (
+      -- checks if there is any (n,d)-Koszul tail in the table
+      for pair in toList(1..pdim(bettiTable))**toList(1..regularity(bettiTable)) list if checkKoszulTail(pair#0, pair#1, bettiTable) then pair else continue
 )
---tested, works, STG 5/16/2023
 
 ---------------------------------------------------
 -------            SCRATCH SPACE            -------
@@ -41,7 +34,9 @@ I = ideal delta;
 -- some statistics of the simplicial complex and its Stanley-Reisner ring
 print fVector delta;
 bettiI = betti res I;
-for pair in toList(1..numgens(R))**toList(1..regularity(I)) do (
-      n = pair#0; d = pair#1;
-      print("Has a (" | toString(n) | "," | toString(d) | ")-Koszul tail: " | toString any(hasKoszulTail(n, d, bettiI), i -> i == true));
-)
+print bettiI;
+tails = koszulTails bettiI;
+if #tails != 0 then print tails else print "No Koszul tails.";
+
+-- search through all simplicial complexes of on a fixed number of vertices
+for subset in subsets(4)
